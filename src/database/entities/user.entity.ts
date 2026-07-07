@@ -24,7 +24,7 @@ export class User {
     @Column()
     passwordHash!: string;
 
-    @Column({ default: 0 })
+    @Column({ default: 1 })
     tokenVersion!: number;
 
     @CreateDateColumn({
