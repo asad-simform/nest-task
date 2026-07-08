@@ -12,6 +12,7 @@ import { CreateUserDTO, LoginUserDTO } from './user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcrypt';
+import { IUser, IUserDetails } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -21,7 +22,7 @@ export class UserService {
         private configService: ConfigService,
     ) {}
 
-    async createAndLoginUser(data: CreateUserDTO) {
+    async createAndLoginUser(data: CreateUserDTO): Promise<IUser> {
         const user = await this.userRepo.findOne({
             where: { email: data.email },
         });
@@ -47,7 +48,7 @@ export class UserService {
         };
     }
 
-    async loginUser(data: LoginUserDTO) {
+    async loginUser(data: LoginUserDTO): Promise<IUser> {
         const user = await this.userRepo.findOne({
             where: { email: data.email },
         });
@@ -71,7 +72,7 @@ export class UserService {
         };
     }
 
-    async findUser(id: number, tokenVersion: number) {
+    async findUser(id: number, tokenVersion: number): Promise<IUserDetails> {
         const user = await this.userRepo.findOne({ where: { id } });
         if (tokenVersion !== user?.tokenVersion)
             throw new BadRequestException();
@@ -84,7 +85,7 @@ export class UserService {
         };
     }
 
-    async logout(id: number, tokenVersion: number) {
+    async logout(id: number, tokenVersion: number): Promise<void> {
         const user = await this.userRepo.findOne({ where: { id } });
         if (!user || tokenVersion !== user.tokenVersion)
             throw new BadRequestException();
