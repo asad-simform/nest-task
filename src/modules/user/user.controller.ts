@@ -38,8 +38,8 @@ export class UserController {
     @Get('me')
     async getUser(@Req() request: Request): ApiResult<IUserDetails> {
         const data = await this.userService.findUser(
-            request['user']?.id,
-            request['user']?.tokenVersion,
+            request.user.id,
+            request.user.tokenVersion,
         );
         return successMessage(data, 200);
     }
@@ -48,8 +48,8 @@ export class UserController {
     @Get('logout')
     async logout(@Req() request: Request): ApiResult<null> {
         await this.userService.logout(
-            request['user']?.id,
-            request['user']?.tokenVersion,
+            request.user.id,
+            request.user.tokenVersion,
         );
         return successMessage(null, 200, 'Logged out successfully');
     }

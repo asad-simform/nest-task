@@ -3,9 +3,11 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { Follower } from './follower.entity';
 
 @Entity({ name: 'user' })
 export class User {
@@ -26,6 +28,15 @@ export class User {
 
     @Column({ default: 1 })
     tokenVersion!: number;
+
+    @Column({ default: false })
+    isPrivate!: boolean;
+
+    @OneToMany(() => Follower, (f) => f.follower)
+    following!: Follower[];
+
+    @OneToMany(() => Follower, (f) => f.following)
+    follower!: Follower[];
 
     @CreateDateColumn({
         type: 'timestamptz',

@@ -4,23 +4,11 @@ import { UserService } from './user.service';
 import { DATA_SOURCE, USER_REPO } from 'src/config/constants';
 import { DataSource } from 'typeorm';
 import { User } from 'src/database/entities/user.entity';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { DatabaseModule } from '../database-module/database.module';
+import { FollowerModule } from './follower/follower.module';
 
 @Module({
-    imports: [
-        DatabaseModule,
-        JwtModule.registerAsync({
-            useFactory: (configService: ConfigService) => ({
-                secret: configService.get('JWT_SECRET'),
-                signOptions: {
-                    expiresIn: configService.get('JWT_EXPIRE_TIME'),
-                },
-            }),
-            inject: [ConfigService],
-        }),
-    ],
+    imports: [DatabaseModule, FollowerModule],
     controllers: [UserController],
     providers: [
         UserService,
