@@ -22,7 +22,7 @@ import { JwtModule } from '@nestjs/jwt';
             global: true,
         }),
     ],
-    controllers: [AppController],
-    providers: [AppService],
+    controllers: [],
+    providers: [],
 })
 export class AppModule {}

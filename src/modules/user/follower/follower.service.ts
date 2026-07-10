@@ -38,8 +38,9 @@ export class FollowerService {
                 },
             },
         });
-        if (!user || data.tokenVersion !== user?.tokenVersion)
-            throw new BadRequestException();
+        if (!user) throw new BadRequestException('User does not exist');
+        if (data.tokenVersion !== user?.tokenVersion)
+            throw new BadRequestException('User session expired');
         return user.follower;
     }
 
@@ -51,15 +52,22 @@ export class FollowerService {
             this.userRepo.findOne({ where: { id: user.id } }),
             this.userRepo.findOne({ where: { id: followingId } }),
         ]);
-        if (!follower || !following || follower.id === following.id)
-            throw new BadRequestException();
+        if (!follower || !following)
+            throw new BadRequestException('Provided user does not exist');
+        if (follower.id === following.id)
+            throw new BadRequestException(
+                'A user cannot follow their own account',
+            );
         const data = await this.followerRepo.findOne({
             where: {
                 follower: { id: user.id },
                 following: { id: followingId },
             },
         });
-        if (data) throw new BadRequestException('Request already exists');
+        if (data)
+            throw new BadRequestException(
+                'You are already following this account',
+            );
         const request = await this.followerRepo.save({
             follower: { id: user.id },
             following: { id: followingId },
@@ -91,8 +99,9 @@ export class FollowerService {
                 },
             },
         });
-        if (!user || data.tokenVersion !== user.tokenVersion)
-            throw new BadRequestException();
+        if (!user) throw new BadRequestException('User does not exist');
+        if (data.tokenVersion !== user.tokenVersion)
+            throw new BadRequestException('User session expired');
         return user.following;
     }
 
@@ -105,20 +114,44 @@ export class FollowerService {
             this.userRepo.findOne({ where: { id: data.id } }),
             this.userRepo.findOne({ where: { id: followerId } }),
         ]);
-        if (
-            !follower ||
-            !following ||
-            following.tokenVersion !== data.tokenVersion
-        )
-            throw new BadRequestException();
+        if (!follower || !following)
+            throw new BadRequestException('Provided user does not exist');
+        if (following.tokenVersion !== data.tokenVersion)
+            throw new BadRequestException('User session expired');
         const followDetails = await this.followerRepo.findOne({
             where: {
                 follower: { id: follower.id },
                 following: { id: following.id },
             },
         });
-        if (!followDetails) throw new BadRequestException();
+        if (!followDetails)
+            throw new BadRequestException(
+                'You are not following the provided user',
+            );
         followDetails.status = status;
         await this.followerRepo.save(followDetails);
+    }
+
+    async unfollowUser(
+        user: { id: number; tokenVersion: number },
+        followingId: number,
+    ): Promise<void> {
+        const [follower, following] = await Promise.all([
+            this.userRepo.findOne({ where: { id: user.id } }),
+            this.userRepo.findOne({ where: { id: followingId } }),
+        ]);
+        if (!follower || !following)
+            throw new BadRequestException('Provided user does not exist');
+        if (follower.id === following.id)
+            throw new BadRequestException('Cannot unfollow');
+        const data = await this.followerRepo.findOne({
+            where: {
+                follower: { id: user.id },
+                following: { id: followingId },
+            },
+        });
+        if (!data)
+            throw new BadRequestException('You are not following this account');
+        await this.followerRepo.remove(data);
     }
 }

@@ -17,6 +17,15 @@ async function bootstrap() {
         .setTitle('Backend')
         .setDescription('The apis for our insta stype app')
         .setVersion('1.0')
+        .addBearerAuth(
+            {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                in: 'header',
+            },
+            'access-token',
+        )
         .build();
 
     const documentFactory = () => SwaggerModule.createDocument(app, config);

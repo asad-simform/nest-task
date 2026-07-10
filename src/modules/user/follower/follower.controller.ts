@@ -9,7 +9,7 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { AuthGuard } from 'src/guards/authGuards';
 import { FollowerService } from './follower.service';
@@ -17,10 +17,12 @@ import { successMessage } from 'src/utils/api-response';
 import type { ApiResult } from 'src/utils/api-response';
 import { Follower, Status } from 'src/database/entities/follower.entity';
 import { IFollower, IFollowing, IRequest } from './follower.interface';
+import { ChangeStatusDTO } from './follower.dto';
 
 // list followings, list followers, request, list request, change request status
 
 @ApiTags('Follower')
+@ApiBearerAuth('access-token')
 @Controller('user')
 @UseGuards(AuthGuard)
 export class FollowerController {
@@ -41,18 +43,17 @@ export class FollowerController {
     @Post('change-status')
     async changeStatus(
         @Req() request: Request,
-        @Body('followerId', ParseIntPipe) followerId: number,
-        @Body('status', new ParseEnumPipe(Status)) status: Status,
+        @Body() body: ChangeStatusDTO,
     ): ApiResult<null> {
         await this.followerService.changeRequestStatus(
             request.user,
-            followerId,
-            status,
+            body.followerId,
+            body.status,
         );
         return successMessage(null, 200);
     }
 
-    @Get('/follow/:id')
+    @Get('follow/:id')
     async createFollowRequest(
         @Req() request: Request,
         @Param('id', ParseIntPipe) followingId: number,
@@ -62,5 +63,17 @@ export class FollowerController {
             followingId,
         );
         return successMessage(data);
+    }
+
+    @Get('unfollow/:id')
+    async unfollowUser(
+        @Req() request: Request,
+        @Param('id', ParseIntPipe) followingId: number,
+    ): ApiResult<null> {
+        const data = await this.followerService.unfollowUser(
+            request.user,
+            followingId,
+        );
+        return successMessage(null);
     }
 }

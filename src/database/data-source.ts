@@ -16,6 +16,7 @@ export const databaseProviders = [
                 entities: [__dirname + '/entities/*{.js,.ts}'],
                 migrations: [__dirname + '/migrations/*{.js,.ts}'],
                 synchronize: false,
+                logging: configService.get('NODE_ENV') === 'development',
             });
             return dataSource.initialize();
         },

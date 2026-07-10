@@ -1,18 +1,22 @@
 import {
     BadRequestException,
+    ConflictException,
     Inject,
     Injectable,
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { USER_REPO } from 'src/config/constants';
+import { CLOUDINARY, USER_REPO } from 'src/config/constants';
 import { User } from 'src/database/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDTO, LoginUserDTO } from './user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcrypt';
-import { IUser, IUserDetails } from './user.interface';
+import { ISignature, IUser, IUserDetails } from './user.interface';
+import { v2 as cloudinary } from 'cloudinary';
+
+type Cloudinary = typeof cloudinary;
 
 @Injectable()
 export class UserService {
@@ -20,76 +24,97 @@ export class UserService {
         @Inject(USER_REPO) private userRepo: Repository<User>,
         private jwtService: JwtService,
         private configService: ConfigService,
+        @Inject(CLOUDINARY) private cloudinary: Cloudinary,
     ) {}
-
-    async createAndLoginUser(data: CreateUserDTO): Promise<IUser> {
-        const user = await this.userRepo.findOne({
-            where: { email: data.email },
-        });
-        if (user) throw new BadRequestException();
-        const saltRounds = +this.configService.get('JWT_SALT_ROUNDS');
-        const passwordHash = await bcrypt.hash(data.password, saltRounds);
-        const newUser = await this.userRepo.save({
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            passwordHash: passwordHash,
-        });
-        const payload = { tokenVersion: newUser.tokenVersion, id: newUser.id };
-
-        const accessToken = await this.jwtService.signAsync(payload, {
-            secret: this.configService.get('JWT_SECRET'),
-        });
-        return {
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            email: newUser.email,
-            accessToken,
-        };
-    }
-
-    async loginUser(data: LoginUserDTO): Promise<IUser> {
-        const user = await this.userRepo.findOne({
-            where: { email: data.email },
-        });
-        if (!user) throw new UnauthorizedException();
-        const isPasswordSame = await bcrypt.compare(
-            data.password,
-            user.passwordHash,
-        );
-        if (!isPasswordSame) throw new UnauthorizedException();
-        const payload = { tokenVersion: user.tokenVersion, id: user.id };
-
-        const accessToken = await this.jwtService.signAsync(payload, {
-            secret: this.configService.get('JWT_SECRET'),
-        });
-
-        return {
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            accessToken,
-        };
-    }
 
     async findUser(id: number, tokenVersion: number): Promise<IUserDetails> {
         const user = await this.userRepo.findOne({ where: { id } });
+        if (!user) throw new BadRequestException('User does not exist');
         if (tokenVersion !== user?.tokenVersion)
-            throw new BadRequestException();
-        if (!user) throw new BadRequestException();
+            throw new BadRequestException('User session expired');
 
         return {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
+            avatarUrl: user.avatarUrl,
+            isPrivate: user.isPrivate,
         };
     }
 
     async logout(id: number, tokenVersion: number): Promise<void> {
         const user = await this.userRepo.findOne({ where: { id } });
-        if (!user || tokenVersion !== user.tokenVersion)
-            throw new BadRequestException();
+        if (!user) throw new BadRequestException('User does not exist');
+        if (tokenVersion !== user?.tokenVersion)
+            throw new BadRequestException('User session expired');
         user.tokenVersion = user.tokenVersion + 1;
         await this.userRepo.save(user);
+    }
+
+    async generateSignature(
+        id: number,
+        tokenVersion: number,
+    ): Promise<ISignature> {
+        const user = await this.userRepo.findOne({ where: { id } });
+        if (!user) throw new BadRequestException('User does not exist');
+        if (tokenVersion !== user?.tokenVersion)
+            throw new BadRequestException('User session expired');
+        const timestamp = Math.floor(Date.now() / 1000);
+        const publicId = crypto.randomUUID();
+        const paramsToSign = {
+            timestamp,
+            public_id: publicId,
+        };
+        const signature = this.cloudinary.utils.api_sign_request(
+            paramsToSign,
+            this.configService.get('CLOUDINARY_API_SECRET')!,
+        );
+        return {
+            cloudName: this.configService.get('CLOUDINARY_CLOUD_NAME')!,
+            apiKey: this.configService.get('CLOUDINARY_API_KEY')!,
+            timestamp,
+            signature,
+            publicId,
+        };
+    }
+
+    async storeAvatarUrl(
+        id: number,
+        tokenVersion: number,
+        url: string,
+    ): Promise<IUserDetails> {
+        const user = await this.userRepo.findOne({ where: { id } });
+        if (!user) throw new BadRequestException('User does not exist');
+        if (tokenVersion !== user?.tokenVersion)
+            throw new BadRequestException('User session expired');
+        user.avatarUrl = url;
+        const updatedUser = await this.userRepo.save(user);
+        return {
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            email: updatedUser.email,
+            avatarUrl: updatedUser.avatarUrl,
+            isPrivate: updatedUser.isPrivate,
+        };
+    }
+
+    async changeVisibility(
+        id: number,
+        tokenVersion: number,
+        status: boolean,
+    ): Promise<IUserDetails> {
+        const user = await this.userRepo.findOne({ where: { id } });
+        if (!user) throw new BadRequestException('User does not exist');
+        if (tokenVersion !== user?.tokenVersion)
+            throw new BadRequestException('User session expired');
+        user.isPrivate = status;
+        const updatedUser = await this.userRepo.save(user);
+        return {
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            email: updatedUser.email,
+            avatarUrl: updatedUser.avatarUrl,
+            isPrivate: updatedUser.isPrivate,
+        };
     }
 }

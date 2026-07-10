@@ -32,6 +32,9 @@ export class User {
     @Column({ default: false })
     isPrivate!: boolean;
 
+    @Column({ nullable: true })
+    avatarUrl!: string;
+
     @OneToMany(() => Follower, (f) => f.follower)
     following!: Follower[];
 

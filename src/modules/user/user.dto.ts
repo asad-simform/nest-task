@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsString, IsUrl } from 'class-validator';
 
 export class CreateUserDTO {
     @ApiProperty({
@@ -39,4 +39,12 @@ export class LoginUserDTO {
     })
     @IsString()
     password!: string;
+}
+
+export class AvatarUrlDTO {
+    @ApiProperty({
+        example: 'http://image-url',
+    })
+    @IsUrl()
+    avatarUrl!: string;
 }
