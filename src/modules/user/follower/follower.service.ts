@@ -4,12 +4,13 @@ import { Follower, Status } from 'src/database/entities/follower.entity';
 import { User } from 'src/database/entities/user.entity';
 import { Repository } from 'typeorm';
 import { IFollower, IRequest } from './follower.interface';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class FollowerService {
     constructor(
-        @Inject(USER_REPO) private userRepo: Repository<User>,
-        @Inject(FOLLOWER_REPO) private followerRepo: Repository<Follower>,
+        @InjectRepository(User) private userRepo: Repository<User>,
+        @InjectRepository(Follower) private followerRepo: Repository<Follower>,
     ) {}
 
     async getFollowers(data: {
@@ -125,9 +126,7 @@ export class FollowerService {
             },
         });
         if (!followDetails)
-            throw new BadRequestException(
-                'You are not following the provided user',
-            );
+            throw new BadRequestException('Provided user does not follow you.');
         followDetails.status = status;
         await this.followerRepo.save(followDetails);
     }

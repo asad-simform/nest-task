@@ -15,13 +15,14 @@ import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcrypt';
 import { ISignature, IUser, IUserDetails } from './user.interface';
 import { v2 as cloudinary } from 'cloudinary';
+import { InjectRepository } from '@nestjs/typeorm';
 
 type Cloudinary = typeof cloudinary;
 
 @Injectable()
 export class UserService {
     constructor(
-        @Inject(USER_REPO) private userRepo: Repository<User>,
+        @InjectRepository(User) private userRepo: Repository<User>,
         private jwtService: JwtService,
         private configService: ConfigService,
         @Inject(CLOUDINARY) private cloudinary: Cloudinary,

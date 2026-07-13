@@ -11,19 +11,14 @@ import { v2 as cloudinary } from 'cloudinary';
 // import { WebhookController } from './webhook/webhook.controller';
 import { WebhookService } from './webhook/webhook.service';
 import { AuthModule } from './auth/auth.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-    imports: [DatabaseModule, FollowerModule, AuthModule],
+    imports: [FollowerModule, AuthModule, TypeOrmModule.forFeature([User])],
     controllers: [UserController],
     providers: [
         UserService,
         WebhookService,
-        {
-            provide: USER_REPO,
-            useFactory: (dataSource: DataSource) =>
-                dataSource.getRepository(User),
-            inject: [DATA_SOURCE],
-        },
         {
             provide: CLOUDINARY,
             useFactory: (configService: ConfigService) => {
