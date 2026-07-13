@@ -1,9 +1,10 @@
 import { ConfigService } from '@nestjs/config';
+import { DATA_SOURCE } from 'src/config/constants';
 import { DataSource } from 'typeorm';
 
 export const databaseProviders = [
     {
-        provide: 'DATA_SOURCE',
+        provide: DATA_SOURCE,
         useFactory: async (configService: ConfigService) => {
             const dataSource = new DataSource({
                 type: 'postgres',
@@ -15,6 +16,7 @@ export const databaseProviders = [
                 entities: [__dirname + '/entities/*{.js,.ts}'],
                 migrations: [__dirname + '/migrations/*{.js,.ts}'],
                 synchronize: false,
+                logging: configService.get('NODE_ENV') === 'development',
             });
             return dataSource.initialize();
         },
