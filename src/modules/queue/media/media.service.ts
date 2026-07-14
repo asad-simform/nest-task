@@ -8,8 +8,6 @@ export class MediaService {
     constructor(@InjectQueue(MEDIA_QUEUE) private mediaQueue: Queue) {}
 
     async processMedia(userId: number, videoUrl: string) {
-        console.log('adding data');
-
         await this.mediaQueue.add(
             'process-video',
             {

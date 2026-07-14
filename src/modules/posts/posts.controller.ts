@@ -1,12 +1,23 @@
-import { Body, Controller, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    ParseIntPipe,
+    Post,
+    Query,
+    Req,
+    UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthGuard } from 'src/guards/authGuards';
-import { CreatePostDTO, ResourceTypeDTO } from './post.dto';
+import { CreatePostDTO, MediaType, ResourceTypeDTO } from './post.dto';
 import { successMessage } from 'src/utils/api-response';
 import type { ISignature } from '../user/user.interface';
 import type { ApiResult } from 'src/utils/api-response';
 import { PostService } from './posts.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { IPost } from './post.interface';
 
 @ApiTags('Post')
 @ApiBearerAuth('access-token')
@@ -15,7 +26,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class PostController {
     constructor(private postService: PostService) {}
 
-    @Post()
+    @Post('signature')
     async generateSignature(
         @Req() request: Request,
         @Query() query: ResourceTypeDTO,
@@ -38,7 +49,35 @@ export class PostController {
             request.user.tokenVersion,
             body.resourceType,
             body.url,
+            body.caption,
+            body.thumbnailUrl,
         );
         return successMessage('post created');
+    }
+
+    @Get()
+    async getPosts(
+        @Req() request: Request,
+        @Query() query: MediaType,
+    ): ApiResult<IPost[]> {
+        const data = await this.postService.getMyPost(
+            request.user.id,
+            request.user.tokenVersion,
+            query.type,
+        );
+        return successMessage(data);
+    }
+
+    @Get(':userId')
+    async getPostById(
+        @Req() request: Request,
+        @Param('userId', ParseIntPipe) userId: number,
+    ): ApiResult<IPost[]> {
+        const data = await this.postService.getPostById(
+            request.user.id,
+            request.user.tokenVersion,
+            userId,
+        );
+        return successMessage(data);
     }
 }

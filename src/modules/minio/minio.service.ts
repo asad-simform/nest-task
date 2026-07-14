@@ -15,9 +15,14 @@ export class MinioService implements OnModuleInit {
             accessKey: this.configService.get('MINIO_ACCESS_KEY')!,
             secretKey: this.configService.get('MINIO_SECRET_KEY')!,
         });
-        const exists = await this.minioClient.bucketExists('sample-bucket');
+        const exists = await this.minioClient.bucketExists(
+            this.configService.get('MINIO_BUCKET_NAME')!,
+        );
         if (!exists) {
-            await this.minioClient.makeBucket('sample-bucket', 'us-east-1');
+            await this.minioClient.makeBucket(
+                this.configService.get('MINIO_BUCKET_NAME')!,
+                'us-east-1',
+            );
             console.log('bucket created');
         } else {
             console.log('bucket exists');
@@ -26,7 +31,7 @@ export class MinioService implements OnModuleInit {
 
     async uploadFile(uploadPath: string, filePath: string) {
         await this.minioClient.fPutObject(
-            'sample-bucket',
+            this.configService.get('MINIO_BUCKET_NAME')!,
             uploadPath,
             filePath,
         );

@@ -38,7 +38,6 @@ export class MediaProcessor extends WorkerHost {
         await fs.mkdir(outputDir, {
             recursive: true,
         });
-        console.log(uuid);
 
         await new Promise<void>((res, rej) => {
             ffmpeg(data.videoUrl)
@@ -68,13 +67,16 @@ export class MediaProcessor extends WorkerHost {
             await fs.unlink(path.join(outputDir, file));
         }
         await fs.rmdir(outputDir);
-        const masterUrl = `http://localhost:9000/sample-bucket/${uuid}/master.m3u8`;
+        const masterUrl = `http://${this.configService.get('MINIO_ENDPOINT')}:${this.configService.get('MINIO_PORT')}/${this.configService.get('MINIO_BUCKET_NAME')}/${uuid}/master.m3u8`;
         const post = await this.postRepo.findOne({
-            where: { url: data.videoUrl },
+            where: { url: data.videoUrl, user: { id: data.userId } },
         });
+        // console.log('post', post);
+
         if (!post) throw new BadRequestException('Post doest not exists');
         post.url = masterUrl;
         post.status = PostStatus.READY;
         await this.postRepo.save(post);
+        // console.log('after saving');
     }
 }

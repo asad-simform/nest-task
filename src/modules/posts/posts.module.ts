@@ -8,9 +8,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/database/entities/user.entity';
 import { Post } from 'src/database/entities/post.entity';
 import { MediaModule } from '../queue/media/media.module';
+import { Follower } from 'src/database/entities/follower.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Post]), MediaModule],
+    imports: [TypeOrmModule.forFeature([User, Post, Follower]), MediaModule],
     controllers: [PostController],
     providers: [
         PostService,
