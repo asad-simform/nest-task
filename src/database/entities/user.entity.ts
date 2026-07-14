@@ -8,6 +8,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { Follower } from './follower.entity';
+import { Post } from './post.entity';
 
 @Entity({ name: 'user' })
 export class User {
@@ -40,6 +41,9 @@ export class User {
 
     @OneToMany(() => Follower, (f) => f.following)
     follower!: Follower[];
+
+    @OneToMany(() => Post, (p) => p.user)
+    posts!: Post[];
 
     @CreateDateColumn({
         type: 'timestamptz',

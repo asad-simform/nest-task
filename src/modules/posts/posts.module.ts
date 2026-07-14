@@ -1,22 +1,20 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
+import { PostController } from './posts.controller';
+import { PostService } from './posts.service';
 import { CLOUDINARY } from 'src/config/constants';
-import { User } from 'src/database/entities/user.entity';
-import { FollowerModule } from './follower/follower.module';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
-// import { WebhookController } from './webhook/webhook.controller';
-import { WebhookService } from './webhook/webhook.service';
-import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/database/entities/user.entity';
+import { Post } from 'src/database/entities/post.entity';
+import { MediaModule } from '../queue/media/media.module';
+import { Follower } from 'src/database/entities/follower.entity';
 
 @Module({
-    imports: [FollowerModule, AuthModule, TypeOrmModule.forFeature([User])],
-    controllers: [UserController],
+    imports: [TypeOrmModule.forFeature([User, Post, Follower]), MediaModule],
+    controllers: [PostController],
     providers: [
-        UserService,
-        WebhookService,
+        PostService,
         {
             provide: CLOUDINARY,
             useFactory: (configService: ConfigService) => {
@@ -32,4 +30,4 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         },
     ],
 })
-export class UserModule {}
+export class PostModule {}

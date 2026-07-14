@@ -1,5 +1,6 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
 import { USER_REPO } from 'src/config/constants';
 import { User } from 'src/database/entities/user.entity';
@@ -9,7 +10,7 @@ import { Repository } from 'typeorm';
 export class WebhookService {
     constructor(
         private configService: ConfigService,
-        @Inject(USER_REPO) private userRepo: Repository<User>,
+        @InjectRepository(User) private userRepo: Repository<User>,
     ) {}
 
     async process(signature: string, timestamp: string, payload: any) {

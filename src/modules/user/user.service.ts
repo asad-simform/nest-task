@@ -15,13 +15,15 @@ import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcrypt';
 import { ISignature, IUser, IUserDetails } from './user.interface';
 import { v2 as cloudinary } from 'cloudinary';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PostType } from 'src/database/entities/post.entity';
 
 type Cloudinary = typeof cloudinary;
 
 @Injectable()
 export class UserService {
     constructor(
-        @Inject(USER_REPO) private userRepo: Repository<User>,
+        @InjectRepository(User) private userRepo: Repository<User>,
         private jwtService: JwtService,
         private configService: ConfigService,
         @Inject(CLOUDINARY) private cloudinary: Cloudinary,
@@ -70,11 +72,13 @@ export class UserService {
             this.configService.get('CLOUDINARY_API_SECRET')!,
         );
         return {
+            uploadUrl: `https://api.cloudinary.com/v1_1/${this.configService.get('CLOUDINARY_CLOUD_NAME')!}/image/upload`,
             cloudName: this.configService.get('CLOUDINARY_CLOUD_NAME')!,
             apiKey: this.configService.get('CLOUDINARY_API_KEY')!,
             timestamp,
             signature,
             publicId,
+            resourceType: PostType.IMAGE,
         };
     }
 
