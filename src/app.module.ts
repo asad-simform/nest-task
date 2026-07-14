@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DatabaseModule } from './modules/database-module/database.module';
 import { UserModule } from './modules/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { QueueModule } from './modules/queue/queue.module';
+import { PostModule } from './modules/posts/posts.module';
 
 @Module({
     imports: [
@@ -39,6 +38,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
             inject: [ConfigService],
             global: true,
         }),
+        QueueModule,
+        PostModule,
     ],
     controllers: [],
     providers: [],
