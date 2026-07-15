@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QueueModule } from './modules/queue/queue.module';
 import { PostModule } from './modules/posts/posts.module';
+import { LikeModule } from './modules/like/like.module';
 
 @Module({
     imports: [
@@ -40,6 +41,7 @@ import { PostModule } from './modules/posts/posts.module';
         }),
         QueueModule,
         PostModule,
+        LikeModule,
     ],
     controllers: [],
     providers: [],
