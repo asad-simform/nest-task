@@ -32,4 +32,17 @@ export class LikeController {
         );
         return successMessage('Like added');
     }
+
+    @Get(':postId/remove')
+    async unlikePost(
+        @Req() request: Request,
+        @Param('postId', ParseIntPipe) postId: number,
+    ): ApiResult<string> {
+        await this.likeService.removeLikeFromPost(
+            request.user.id,
+            request.user.tokenVersion,
+            postId,
+        );
+        return successMessage('Unliked the post');
+    }
 }

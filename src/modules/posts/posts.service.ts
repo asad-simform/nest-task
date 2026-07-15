@@ -108,6 +108,7 @@ export class PostService {
                 status: true,
                 thumbnailUrl: true,
                 createdAt: true,
+                likeCounts: true,
             },
         });
         return posts;

@@ -7,4 +7,5 @@ export interface IPost {
     status: PostStatus;
     thumbnailUrl: string;
     createdAt: Date;
+    likeCounts: number;
 }

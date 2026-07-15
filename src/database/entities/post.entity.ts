@@ -46,6 +46,9 @@ export class Post {
     @OneToMany(() => Like, (l) => l.post)
     likes!: Like[];
 
+    @Column({ default: 0 })
+    likeCounts!: number;
+
     @CreateDateColumn({
         type: 'timestamptz',
         default: () => 'CURRENT_TIMESTAMP',
