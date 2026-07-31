@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCommentDTO {
@@ -40,4 +41,24 @@ export class EditCommentDTO {
     })
     @IsNumber()
     commentId!: number;
+}
+
+export class GetPostCommentDTO {
+    @ApiPropertyOptional({
+        example: 10,
+        description: 'Represents the last comment id',
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    lastCommentId?: number;
+
+    @ApiPropertyOptional({
+        example: 10,
+        description: 'Represents the parentId if not provided null is send',
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    parentId?: number;
 }

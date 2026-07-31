@@ -6,6 +6,7 @@ import {
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { Post } from './post.entity';
 import { User } from './user.entity';
@@ -42,4 +43,10 @@ export class Comment {
         default: () => 'CURRENT_TIMESTAMP',
     })
     createdAt!: Date;
+
+    @UpdateDateColumn({
+        type: 'timestamptz',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
+    updatedAt!: Date;
 }

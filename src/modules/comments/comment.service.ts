@@ -4,7 +4,7 @@ import { Comment } from 'src/database/entities/comments.entity';
 import { Follower, Status } from 'src/database/entities/follower.entity';
 import { Post } from 'src/database/entities/post.entity';
 import { User } from 'src/database/entities/user.entity';
-import { Repository } from 'typeorm';
+import { IsNull, LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class CommentService {
@@ -95,5 +95,60 @@ export class CommentService {
         if (commentDetail.affected === 0)
             throw new BadRequestException('No comments found.');
         return;
+    }
+
+    async deleteCommentById(
+        userId: number,
+        tokenVersion: number,
+        commentId: number,
+    ) {
+        const user = await this.userRepo.findOne({ where: { id: userId } });
+        if (!user) throw new BadRequestException('User does not exist');
+        if (tokenVersion !== user?.tokenVersion)
+            throw new BadRequestException('User session expired');
+        const deletedComment = await this.commentRepo.update(
+            {
+                id: commentId,
+                user: { id: userId },
+            },
+            {
+                comment: '[deleted]',
+            },
+        );
+        if (deletedComment.affected === 0)
+            throw new BadRequestException('No comments found.');
+        return;
+    }
+
+    async getCommentByPostId(
+        postId: number,
+        parentId?: number,
+        lastCommentId?: number,
+    ) {
+        const commentData = await this.commentRepo.find({
+            where: {
+                post: { id: postId },
+                ...(lastCommentId && { id: LessThan(lastCommentId) }),
+                parentId: parentId ? parentId : IsNull(),
+            },
+            relations: {
+                user: true,
+            },
+            order: {
+                id: 'DESC',
+            },
+            take: 10,
+            select: {
+                id: true,
+                comment: true,
+                user: {
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                },
+                createdAt: true,
+            },
+        });
+        return commentData;
     }
 }
