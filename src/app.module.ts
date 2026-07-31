@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { QueueModule } from './modules/queue/queue.module';
 import { PostModule } from './modules/posts/posts.module';
 import { LikeModule } from './modules/like/like.module';
+import { CommentModule } from './modules/comments/comment.module';
 
 @Module({
     imports: [
@@ -42,6 +43,7 @@ import { LikeModule } from './modules/like/like.module';
         QueueModule,
         PostModule,
         LikeModule,
+        CommentModule,
     ],
     controllers: [],
     providers: [],
