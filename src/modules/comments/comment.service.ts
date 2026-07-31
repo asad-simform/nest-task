@@ -142,6 +142,7 @@ export class CommentService {
                 id: true,
                 comment: true,
                 user: {
+                    id: true,
                     firstName: true,
                     lastName: true,
                     avatarUrl: true,

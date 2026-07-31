@@ -4,7 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { Post, PostStatus, PostType } from 'src/database/entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/database/entities/user.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { ISignature } from '../user/user.interface';
 import { MediaService } from '../queue/media/media.service';
@@ -147,5 +147,34 @@ export class PostService {
             where: { user: { id: userId } },
         });
         return data;
+    }
+
+    async fetchPosts(lastPostId?: number) {
+        const postDetails = await this.postRepo.find({
+            where: {
+                ...(lastPostId && { id: LessThan(lastPostId) }),
+            },
+            relations: {
+                user: true,
+            },
+            order: {
+                id: 'DESC',
+            },
+            take: 10,
+            select: {
+                id: true,
+                caption: true,
+                thumbnailUrl: true,
+                url: true,
+                likeCounts: true,
+                user: {
+                    id: true,
+                    lastName: true,
+                    firstName: true,
+                    avatarUrl: true,
+                },
+            },
+        });
+        return postDetails;
     }
 }
