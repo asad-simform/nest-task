@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Like } from './likes.entity';
+import { Comment } from './comments.entity';
 
 export enum PostType {
     IMAGE = 'IMAGE',
@@ -48,6 +49,9 @@ export class Post {
 
     @Column({ default: 0 })
     likeCounts!: number;
+
+    @OneToMany(() => Comment, (c) => c.post)
+    comments!: Comment[];
 
     @CreateDateColumn({
         type: 'timestamptz',

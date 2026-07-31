@@ -10,6 +10,7 @@ import {
 import { Follower } from './follower.entity';
 import { Post } from './post.entity';
 import { Like } from './likes.entity';
+import { Comment } from './comments.entity';
 
 @Entity({ name: 'user' })
 export class User {
@@ -48,6 +49,9 @@ export class User {
 
     @OneToMany(() => Like, (l) => l.user)
     likes!: Like[];
+
+    @OneToMany(() => Comment, (c) => c.user)
+    comments!: Comment[];
 
     @CreateDateColumn({
         type: 'timestamptz',
