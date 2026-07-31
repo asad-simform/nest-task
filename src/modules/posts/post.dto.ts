@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 import { PostType } from 'src/database/entities/post.entity';
 
 export class ResourceTypeDTO {
@@ -45,4 +46,14 @@ export class MediaType {
     @IsOptional()
     @IsEnum(PostType)
     type?: PostType;
+}
+
+export class PostFeed {
+    @ApiPropertyOptional({
+        example: 1,
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    lastPostId?: number;
 }
